@@ -8,7 +8,7 @@ var reader = rw.fileReader(process.argv[2] || "/dev/stdin"),
     oddWriter = rw.fileWriter("split-odd.out"),
     evenWriter = rw.fileWriter("split-even.out");
 
-reader.fill(function drain(error) {
+reader.fill(function pipe(error) {
   if (error) throw error;
   var data = reader.read(),
       line;
@@ -18,11 +18,11 @@ reader.fill(function drain(error) {
   while ((line = lineParser.pop(reader.ended)) != null) {
     var writer = ++lineNumber & 1 ? oddWriter : evenWriter;
     if (!writer.write(line + "\n")) {
-      return writer.drain(drain);
+      return writer.drain(pipe);
     }
   }
 
   if (reader.ended) return oddWriter.end(), evenWriter.end();
 
-  reader.fill(drain);
+  reader.fill(pipe);
 });

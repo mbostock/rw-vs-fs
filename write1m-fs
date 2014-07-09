@@ -16,7 +16,7 @@ function write1m(writer, data, callback) {
       }
     }
 
-    return writer.write(data, end);
+    writer.write(data, end);
   })();
 
   function end() {

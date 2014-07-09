@@ -18,6 +18,6 @@ function write1m(writer, data, callback) {
       }
     }
 
-    return writer.end(callback);
+    writer.end(callback);
   })();
 }

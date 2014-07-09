@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+
+var rw = require("rw");
+
+write1m(rw.fileWriter("/dev/stdout"), new Buffer("yes\n"), function(error) {
+  if (error) throw error;
+});
+
+function write1m(writer, data, callback) {
+  var i = 1e6;
+
+  (function write(error) {
+    if (error) return callback(error);
+
+    while (--i >= 0) {
+      if (!writer.write(data)) {
+        return writer.drain(write);
+      }
+    }
+
+    return writer.end(callback);
+  })();
+}

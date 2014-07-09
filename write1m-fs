@@ -1,0 +1,26 @@
+#!/usr/bin/env node
+
+write1m(process.stdout, new Buffer("yes\n"), function(error) {
+  if (error) throw error;
+});
+
+function write1m(writer, data, callback) {
+  var i = 1e6;
+
+  writer.once("error", callback);
+
+  (function write() {
+    while (--i > 0) {
+      if (!writer.write(data)) {
+        return writer.once("drain", write);
+      }
+    }
+
+    return writer.write(data, end);
+  })();
+
+  function end() {
+    writer.removeListener("error", callback);
+    callback(null);
+  }
+}

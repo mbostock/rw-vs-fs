@@ -1,0 +1,31 @@
+#!/usr/bin/env node
+
+var rw = require("rw");
+
+var reader = rw.fileReader(process.argv[2] || "/dev/stdin"),
+    writer = rw.fileWriter("/dev/stdout");
+
+var CODE_A = "A".charCodeAt(0),
+    CODE_Z = "Z".charCodeAt(0),
+    CODE_a = "a".charCodeAt(0),
+    CODE_z = "z".charCodeAt(0);
+
+function rot13(buffer) {
+  for (var i = 0, n = buffer.length, character; i < n; ++i) {
+    character = buffer[i];
+    if (CODE_A <= character && character <= CODE_Z) {
+      buffer[i] = (character - CODE_A + 13) % 26 + CODE_A;
+    } else if (CODE_a <= character && character <= CODE_z) {
+      buffer[i] = (character - CODE_a + 13) % 26 + CODE_a;
+    }
+  }
+  return buffer;
+}
+
+reader.fill(function pipe(error) {
+  if (error) throw error;
+  var data = reader.read();
+  if (data && !writer.write(rot13(data))) return writer.drain(pipe);
+  if (reader.ended) return writer.end();
+  reader.fill(pipe);
+});

@@ -1,0 +1,28 @@
+#!/usr/bin/env node
+
+var fs = require("fs"),
+    stream = require("stream");
+
+var CODE_A = "A".charCodeAt(0),
+    CODE_Z = "Z".charCodeAt(0),
+    CODE_a = "a".charCodeAt(0),
+    CODE_z = "z".charCodeAt(0);
+
+var rot13 = new stream.Transform;
+
+rot13._transform = function(buffer, encoding, callback) {
+  for (var i = 0, n = buffer.length, character; i < n; ++i) {
+    character = buffer[i];
+    if (CODE_A <= character && character <= CODE_Z) {
+      buffer[i] = (character - CODE_A + 13) % 26 + CODE_A;
+    } else if (CODE_a <= character && character <= CODE_z) {
+      buffer[i] = (character - CODE_a + 13) % 26 + CODE_a;
+    }
+  }
+  this.push(buffer);
+  callback(null);
+};
+
+fs.createReadStream(process.argv[2] || "/dev/stdin")
+    .pipe(rot13)
+    .pipe(process.stdout);

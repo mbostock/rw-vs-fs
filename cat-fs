@@ -1,0 +1,16 @@
+#!/usr/bin/env node
+
+var fs = require("fs");
+
+var inputs = process.argv.slice(2);
+if (inputs.length) inputs.reverse();
+else inputs.push("/dev/stdin");
+
+(function cat() {
+  var input = inputs.pop();
+  if (!input) return;
+
+  fs.createReadStream(input)
+      .on("end", cat)
+      .pipe(process.stdout);
+})();

@@ -1,0 +1,23 @@
+#!/usr/bin/env node
+
+var rw = require("rw");
+
+var writer = rw.fileWriter("/dev/stdout");
+
+var inputs = process.argv.slice(2);
+if (inputs.length) inputs.reverse();
+else inputs.push("/dev/stdin");
+
+(function cat() {
+  var input = inputs.pop();
+  if (!input) return writer.end();
+  var reader = rw.fileReader(input);
+
+  reader.fill(function pipe(error) {
+    if (error) throw error;
+    var data = reader.read();
+    if (data && !writer.write(data)) return writer.drain(pipe);
+    if (reader.ended) return writer.drain(cat);
+    reader.fill(pipe);
+  });
+})();

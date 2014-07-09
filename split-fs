@@ -1,0 +1,37 @@
+#!/usr/bin/env node
+
+var fs = require("fs"),
+    stream = require("stream"),
+    rw = require("rw");
+
+var reader = fs.createReadStream(process.argv[2] || "/dev/stdin"),
+    lineParser = rw.lineParser(),
+    lineNumber = 0,
+    lineAlternator = new stream.Writable,
+    oddWriter = fs.createWriteStream("split-odd.out"),
+    evenWriter = fs.createWriteStream("split-even.out");
+
+lineAlternator._write = function(buffer, encoding, callback) {
+  lineParser.push(buffer);
+
+  (function write() {
+    var line;
+    while ((line = lineParser.pop()) != null) {
+      var writer = ++lineNumber & 1 ? oddWriter : evenWriter;
+      if (!writer.write(line + "\n")) return writer.once("drain", write);
+    }
+    callback(null);
+  })();
+};
+
+lineAlternator.on("finish", function() {
+  var line = lineParser.pop(true);
+  if (line != null) {
+    var writer = ++lineNumber & 1 ? oddWriter : evenWriter;
+    writer.write(line + "\n");
+  }
+  oddWriter.end();
+  evenWriter.end();
+});
+
+reader.pipe(lineAlternator);

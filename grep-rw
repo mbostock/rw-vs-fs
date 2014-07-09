@@ -1,0 +1,26 @@
+#!/usr/bin/env node
+
+var rw = require("rw");
+
+var pattern = new RegExp(process.argv[2]),
+    reader = rw.fileReader(process.argv[3] || "/dev/stdin"),
+    writer = rw.fileWriter("/dev/stdout"),
+    lineParser = rw.lineParser();
+
+reader.fill(function pipe(error) {
+  if (error) throw error;
+  var data = reader.read(),
+      line;
+
+  if (data) lineParser.push(data);
+
+  while ((line = lineParser.pop(reader.ended)) != null) {
+    if (pattern.test(line) && !writer.write(line + "\n")) {
+      return writer.drain(pipe);
+    }
+  }
+
+  if (reader.ended) return writer.end();
+
+  reader.fill(pipe);
+});

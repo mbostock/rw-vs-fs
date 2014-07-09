@@ -9,10 +9,10 @@ function write1m(writer, data, callback) {
 
   writer.once("error", callback);
 
-  (function write() {
+  (function pipe() {
     while (--i > 0) {
       if (!writer.write(data)) {
-        return writer.once("drain", write);
+        return writer.once("drain", pipe);
       }
     }
 

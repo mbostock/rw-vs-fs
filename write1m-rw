@@ -9,12 +9,12 @@ write1m(rw.fileWriter("/dev/stdout"), new Buffer("yes\n"), function(error) {
 function write1m(writer, data, callback) {
   var i = 1e6;
 
-  (function write(error) {
+  (function pipe(error) {
     if (error) return callback(error);
 
     while (--i >= 0) {
       if (!writer.write(data)) {
-        return writer.drain(write);
+        return writer.drain(pipe);
       }
     }
 
